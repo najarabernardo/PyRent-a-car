@@ -1,4 +1,7 @@
 import os
+clientes = []
+veiculos = []
+locacoes = []
 
 resp = ''
 while resp != '0':
@@ -17,32 +20,70 @@ while resp != '0':
     resp = input("##### Selecione a operação desejada: ")
 
     if resp == '1':   
-        print()
-        print("############################################")
-        print("#####     Área do Cliente - PyRent     #####")
-        print("############################################")
-        print("#####                                  #####")
-        print("#####          Funcionalidade          #####")
-        print("#####         em desenvolvimento       #####")
-        print("#####                                  #####")
-        print("############################################")
-        print()
-        input("Tecle <ENTER> para continuar...")
+        # MÓDULO CLIENTES
+        opcao_cliente = ''
+        while opcao_cliente != '3':
+            os.system('cls')
+            print("############################################")
+            print("#####      Área do Cliente - PyRent    #####")
+            print("############################################")
+            print("#####  1 - Cadastrar Cliente           #####")
+            print("#####  2 - Listar Clientes             #####")
+            print("#####  3 - Voltar ao Menu Principal    #####")
+            print("############################################")
+            opcao_cliente = input("Opção: ")
+            if opcao_cliente == '1':
+                print("\n--- Cadastro de Cliente ---")
+                cpf = input("CPF: ")
+                nome = input("Nome: ")
+                telefone = input("Telefone: ")
+                clientes.append({"cpf": cpf, "nome": nome, "telefone": telefone})
+                print("\n[✔] Cliente cadastrado com sucesso!")
+                input("\nTecle <ENTER> para continuar...")
+                
+            elif opcao_cliente == '2':
+                print("\n--- Lista de Clientes Cadastrados ---")
+                if not clientes:
+                    print("Nenhum cliente cadastrado.")
+                else:
+                    for c in clientes:
+                        print(f"Nome: {c['nome']} | CPF: {c['cpf']} | Tel: {c['telefone']}")
+                input("\nTecle <ENTER> para continuar...")
         
     elif resp == '2':
-        print()
-        print("############################################")
-        print("#####         Gestão da Frota           ####")
-        print("############################################")
-        print("#####                                  #####")
-        print("#####          Funcionalidade          #####")
-        print("#####         em desenvolvimento       #####")
-        print("#####                                  #####")
-        print("############################################")
-        print()
-        input("Tecle <ENTER> para continuar...")
+        # MÓDULO VEÍCULOS/FROTA
+        opcao_veiculo = ''
+        while opcao_veic != '3':
+            os.system('cls')
+            print("############################################")
+            print("#####          Gestão da Frota         ####")
+            print("############################################")
+            print("#####  1 - Cadastrar Veículo           #####")
+            print("#####  2 - Listar Frota                #####")
+            print("#####  3 - Voltar ao Menu Principal    #####")
+            print("############################################")
+            opcao_veiculo = input("Opção: ")
+            
+            if opcao_veiculo == '1':
+                print("\n--- Cadastro de Veículo ---")
+                placa = input("Placa: ")
+                modelo = input("Modelo/Carro: ")
+                marca = input("Marca: ")
+                veiculos.append({"placa": placa, "modelo": modelo, "marca": marca, "status": "Disponível"})
+                print("\n[✔] Veículo cadastrado com sucesso!")
+                input("\nTecle <ENTER> para continuar...")
+                
+            elif opcao_veic == '2':
+                print("\n--- Frota de Veículos ---")
+                if not veiculos:
+                    print("Nenhum veículo cadastrado na frota.")
+                else:
+                    for v in veiculos:
+                        print(f"Modelo: {v['modelo']} ({v['marca']}) | Placa: {v['placa']} | Status: {v['status']}")
+                input("\nTecle <ENTER> para continuar...")
         
     elif resp == '3':
+        # MÓDULO LOCAÇÃO
         print()
         print("############################################")
         print("#####         Painel de Aluguel       ######")
