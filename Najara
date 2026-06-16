@@ -84,18 +84,65 @@ while resp != '0':
         
     elif resp == '3':
         # MÓDULO LOCAÇÃO
+        opcao_loc = ''
+        while opcao_loc != '3':
+        os.system('cls' if os.name == 'nt' else 'clear')
         print()
         print("############################################")
         print("#####         Painel de Aluguel       ######")
         print("############################################")
-        print("#####                                ######")
-        print("#####          Funcionalidade          #####")
-        print("#####         em desenvolvimento       #####")
-        print("#####                                  #####")
+        print("#####    1- Nova Locação              ######")
+        print("#####    2- Listar Locações Ativas     #####")
+        print("#####    3- voltar ao Menu Principal   #####")
         print("############################################")
-        print()
-        input("Tecle <ENTER> para continuar...")
-        
+        opcao_loc = input("Opção: ")
+
+        if opcao_loc == '1':
+            print("\n--- Nova Locação ---")
+            if not clientes or not veiculos:
+                print("[X] Erro: É necessário ter pelo menos um cliente e um veículo cadastrados!")
+                input("\nTecle <ENTER> para continuar...")
+                continue
+
+            cpf_busca = input("Digite o CPF do cliente: ")
+            # Verifica se o cliente existe
+            cliente_encontrado = next((c for c in clientes if c['cpf'] == cpf_busca), None)
+                
+            if not cliente_encontrado:
+                print("[X] Cliente não encontrado!")
+                input("\nTecle <ENTER> para continuar...")
+                continue
+            placa_busca = input("Digite a placa do veículo desejado: ")
+            # Verifica se o veículo existe e está disponível
+            veiculo_encontrado = next((v for v in veiculos if v['placa'] == placa_busca), None)
+                
+            if not veiculo_encontrado:
+                print("[X] Veículo não encontrado!")
+            elif veiculo_encontrado['status'] == 'Alugado':
+                print("[X] Este veículo já está alugado no momento!")
+            else:
+                # Aluga o carro
+                veiculo_encontrado['status'] = 'Alugado'
+                dias = input("Quantidade de dias da locação: ")
+
+                locacoes.append({
+                    "cliente": cliente_encontrado['nome'],
+                    "veiculo": veiculo_encontrado['modelo'],
+                    "placa": veiculo_encontrado['placa'],
+                    "dias": dias
+                    })
+                    print(f"\n[✔] Sucesso! {veiculo_encontrado['modelo']} alugado para {cliente_encontrado['nome']}.")
+                
+            input("\nTecle <ENTER> para continuar...")
+        elif opcao_loc == '2':
+            print("\n--- Locações Ativas ---")
+            if not locacoes:
+                print("Nenhuma locação ativa no momento.")
+            else:
+                for l in locacoes:
+                    print(f"Cliente: {l['cliente']} | Carro: {l['veiculo']} ({l['placa']}) | Tempo: {l['dias']} dias")
+            input("\nTecle <ENTER> para continuar...")
+
     elif resp == '4':
         print()
         print("############################################")
