@@ -1,11 +1,39 @@
 import os
+from datetime import datetime
+
 clientes = []
 veiculos = []
 locacoes = []
 
+def validar_cpf(cpf: str) -> bool:
+    """Valida um CPF utilizando o algoritmo oficial dos dígitos verificadores."""
+    # Remove caracteres não numéricos
+    cpf = ''.join(filter(str.isdigit, cpf))
+    
+    # Verifica se tem 11 dígitos ou se é uma sequência repetida comum
+    if len(cpf) != 11 or cpf == cpf[0] * 11:
+        return False
+        
+    # Cálculo do primeiro dígito verificador
+    soma = sum(int(cpf[i]) * (10 - i) for i in range(9))
+    resto = (soma * 10) % 11
+    digito_1 = 0 if resto == 10 else resto
+    
+    # Cálculo do segundo dígito verificador
+    soma = sum(int(cpf[i]) * (11 - i) for i in range(10))
+    resto = (soma * 10) % 11
+    digito_2 = 0 if resto == 10 else resto
+    
+    return cpf[9] == str(digito_1) and cpf[10] == str(digito_2)
+
+def limpar_tela():
+    """Limpa o terminal de forma multiplataforma (Windows e Linux/Mac)."""
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+
 resp = ''
 while resp != '0':
-    os.system('cls')
+    limpar_tela()
     
     print("##############################################")
     print("#######           PyRent-a-car         #######")
@@ -73,7 +101,7 @@ while resp != '0':
                 print("\n[✔] Veículo cadastrado com sucesso!")
                 input("\nTecle <ENTER> para continuar...")
                 
-            elif opcao_veic == '2':
+            elif opcao_veiculo == '2':
                 print("\n--- Frota de Veículos ---")
                 if not veiculos:
                     print("Nenhum veículo cadastrado na frota.")
