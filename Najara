@@ -5,21 +5,17 @@ clientes = []
 veiculos = []
 locacoes = []
 
+
 def validar_cpf(cpf: str) -> bool:
-    # Valida CPF #
-    # Remove caracteres não numéricos#
+    "Valida um CPF" 
     cpf = ''.join(filter(str.isdigit, cpf))
-    
-    # Verifica se tem 11 dígitos ou se é uma sequência repetida #
     if len(cpf) != 11 or cpf == cpf[0] * 11:
         return False
-        
-    # Cálculo do primeiro dígito verificador #
+    
     soma = sum(int(cpf[i]) * (10 - i) for i in range(9))
     resto = (soma * 10) % 11
     digito_1 = 0 if resto == 10 else resto
     
-    # Cálculo do segundo dígito verificador #
     soma = sum(int(cpf[i]) * (11 - i) for i in range(10))
     resto = (soma * 10) % 11
     digito_2 = 0 if resto == 10 else resto
@@ -27,14 +23,17 @@ def validar_cpf(cpf: str) -> bool:
     return cpf[9] == str(digito_1) and cpf[10] == str(digito_2)
 
 def limpar_tela():
-  
+    
     os.system('cls' if os.name == 'nt' else 'clear')
+
+def pausar():
+    
+    input("\nTecle <ENTER> para continuar...")
 
 
 resp = ''
 while resp != '0':
     limpar_tela()
-    
     print("##############################################")
     print("#######           PyRent-a-car         #######")
     print("######   Gestão de Locação de Veículos  ######")
@@ -50,176 +49,299 @@ while resp != '0':
     if resp == '1':   
         # MÓDULO CLIENTES #
         opcao_cliente = ''
-        while opcao_cliente != '4':
+        while opcao_cliente != '6':
             limpar_tela()
             print("############################################")
             print("#####      Área do Cliente - PyRent    #####")
             print("############################################")
             print("#####  1 - Cadastrar Cliente           #####")
-            print("#####  2 - Listar Clientes             #####")
-            print("#####  3 - Aniversariantes do Mês      #####")
-            print("#####  4 - Voltar ao Menu Principal    #####")
+            print("#####  2 - Exibir/Listar Clientes      #####")
+            print("#####  3 - Alterar Cliente             #####")
+            print("#####  4 - Excluir Cliente             #####")
+            print("#####  5 - Relatório: Aniversariantes  #####")
+            print("#####  6 - Voltar ao Menu Principal    #####")
             print("############################################")
             opcao_cliente = input("Opção: ").strip()
             
             if opcao_cliente == '1':
-                print("\n--- Cadastro de Cliente ---")
+                print("\n--- [C] Cadastrar Cliente ---")
                 cpf = input("CPF (apenas números): ").strip()
-                
-                # Validação do CPF em loop até digitar um válido #
                 while not validar_cpf(cpf):
                     print("[X] CPF Inválido! Tente novamente.")
                     cpf = input("CPF (apenas números): ").strip()
                 
+                # Verifica duplicidade de CPF #
+                if any(c['cpf'] == cpf for c in clientes):
+                    print("[X] Erro: Já existe um cliente cadastrado com este CPF!")
+                    pausar()
+                    continue
+
                 nome = input("Nome: ").strip()
                 telefone = input("Telefone: ").strip()
                 
-                # validação da data de nascimento #
                 data_nasc_valida = False
                 while not data_nasc_valida:
                     data_nasc_str = input("Data de Nascimento (DD/MM/AAAA): ").strip()
                     try:
-                        # Valida formato de data #
-                        data_nasc = datetime.strptime(data_nasc_str, "%d/%m/%d" if len(data_nasc_str)==5 else "%d/%m/%Y")
+                        data_nasc = datetime.strptime(data_nasc_str, "%d/%m/%Y")
                         data_nasc_valida = True
                     except ValueError:
-                        print("[X] Formato de data inválido. Use o padrão DD/MM/AAAA.")
+                        print("[X] Formato inválido. Use o padrão DD/MM/AAAA.")
 
                 clientes.append({
-                    "cpf": cpf, 
-                    "nome": nome, 
-                    "telefone": telefone, 
-                    "mes_aniversario": data_nasc.month,
-                    "data_nasc_str": data_nasc.strftime("%d/%m/%Y")
+                    "cpf": cpf, "nome": nome, "telefone": telefone, 
+                    "mes_aniversario": data_nasc.month, "data_nasc_str": data_nasc.strftime("%d/%m/%Y")
                 })
                 print("\n[✔] Cliente cadastrado com sucesso!")
-                input("\nTecle <ENTER> para continuar...")
+                pausar()
                 
             elif opcao_cliente == '2':
-                print("\n--- Lista de Clientes Cadastrados ---")
+                print("\n--- [R] Exibir Clientes Cadastrados ---")
                 if not clientes:
                     print("Nenhum cliente cadastrado.")
                 else:
                     for c in clientes:
-                        print(f"Nome: {c['nome']} | CPF: {c['cpf']} | Tel: {c['telefone']} | Nasc: {c['data_nasc_str']}")
-                input("\nTecle <ENTER> para continuar...")
+                        print(f"CPF: {c['cpf']} | Nome: {c['nome']} | Tel: {c['telefone']} | Nasc: {c['data_nasc_str']}")
+                pausar()
                 
             elif opcao_cliente == '3':
-                print("\n--- Buscar Aniversariantes do Mês ---")
+                print("\n--- [U] Alterar Cliente ---")
+                cpf_busca = input("Digite o CPF do cliente que deseja alterar: ").strip()
+                cliente = next((c for c in clientes if c['cpf'] == cpf_busca), None)
+                
+                if cliente:
+                    print(f"\nCliente Encontrado: {cliente['nome']}")
+                    cliente['nome'] = input(f"Novo Nome ({cliente['nome']}): ").strip() or cliente['nome']
+                    cliente['telefone'] = input(f"Novo Telefone ({cliente['telefone']}): ").strip() or cliente['telefone']
+                    print("\n[✔] Dados atualizados com sucesso!")
+                else:
+                    print("[X] Cliente não encontrado.")
+                pausar()
+                
+            elif opcao_cliente == '4':
+                print("\n--- [D] Excluir Cliente ---")
+                cpf_busca = input("Digite o CPF do cliente a ser removido: ").strip()
+                cliente = next((c for c in clientes if c['cpf'] == cpf_busca), None)
+                
+                if cliente:
+                    # Impede exclusão se o cliente tiver locação ativa #
+                    if any(l['cpf_cliente'] == cpf_busca for l in locacoes):
+                        print("[X] Não é possível excluir um cliente com locações pendentes!")
+                    else:
+                        clientes.remove(cliente)
+                        print("\n[✔] Cliente removido com sucesso!")
+                else:
+                    print("[X] Cliente não encontrado.")
+                pausar()
+                
+            elif opcao_cliente == '5':
+                print("\n--- [Relatório] Aniversariantes do Mês ---")
                 try:
-                    mes_busca = int(input("Digite o número do mês que deseja buscar (1 a 12): "))
+                    mes_busca = int(input("Digite o número do mês (1 a 12): "))
                     if 1 <= mes_busca <= 12:
-                        aniversariantes = [c for c in clientes if c['mes_aniversario'] == mes_busca]
-                        
-                        if not aniversariantes:
-                            print(f"\nNenhum cliente faz aniversário no mês {mes_busca}.")
+                        filtro = [c for c in clientes if c['mes_aniversario'] == mes_busca]
+                        if not filtro:
+                            print(f"\nNenhum aniversariante no mês {mes_busca}.")
                         else:
                             print(f"\n--- Aniversariantes do Mês {mes_busca} ---")
-                            for ani in aniversariantes:
-                                print(f"• {ani['nome']} | Contato: {ani['telefone']} | Data: {ani['data_nasc_str']}")
+                            for ani in filtro:
+                                print(f"• {ani['nome']} | Tel: {ani['telefone']} | Nasc: {ani['data_nasc_str']}")
                     else:
-                        print("[X] Mês inválido. Digite um valor entre 1 e 12.")
+                        print("[X] Mês inválido.")
                 except ValueError:
-                    print("[X] Entrada inválida. Digite apenas números.")
-                input("\nTecle <ENTER> para continuar...")
+                    print("[X] Entrada inválida.")
+                pausar()
         
     elif resp == '2':
-        # MÓDULO VEÍCULOS/FROTA #
+        # MÓDULO VEÍCULOS #
         opcao_veiculo = ''
-        while opcao_veiculo != '3':
+        while opcao_veiculo != '6':
             limpar_tela()
             print("############################################")
             print("#####          Gestão da Frota         ####")
             print("############################################")
             print("#####  1 - Cadastrar Veículo           #####")
-            print("#####  2 - Listar Frota                #####")
-            print("#####  3 - Voltar ao Menu Principal    #####")
+            print("#####  2 - Exibir Frota (Geral)        #####")
+            print("#####  3 - Alterar Dados do Veículo    #####")
+            print("#####  4 - Excluir Veículo da Frota    #####")
+            print("#####  5 - Relatório: Por Status       #####")
+            print("#####  6 - Voltar ao Menu Principal    #####")
             print("############################################")
             opcao_veiculo = input("Opção: ").strip()
             
             if opcao_veiculo == '1':
-                print("\n--- Cadastro de Veículo ---")
+                print("\n--- [C] Cadastrar Veículo ---")
                 placa = input("Placa: ").strip().upper()
+                if any(v['placa'] == placa for v in veiculos):
+                    print("[X] Erro: Já existe um veículo com esta placa na frota!")
+                    pausar()
+                    continue
+                
                 modelo = input("Modelo/Carro: ").strip()
                 marca = input("Marca: ").strip()
                 veiculos.append({"placa": placa, "modelo": modelo, "marca": marca, "status": "Disponível"})
-                print("\n[✔] Veículo cadastrado com sucesso!")
-                input("\nTecle <ENTER> para continuar...")
+                print("\n[✔] Veículo adicionado à frota!")
+                pausar()
                 
             elif opcao_veiculo == '2':
-                print("\n--- Frota de Veículos ---")
+                print("\n--- [R] Exibir Frota Total ---")
                 if not veiculos:
                     print("Nenhum veículo cadastrado na frota.")
                 else:
                     for v in veiculos:
-                        print(f"Modelo: {v['modelo']} ({v['marca']}) | Placa: {v['placa']} | Status: {v['status']}")
-                input("\nTecle <ENTER> para continuar...")
+                        print(f"Placa: {v['placa']} | {v['marca']} {v['modelo']} | Status: {v['status']}")
+                pausar()
+                
+            elif opcao_veiculo == '3':
+                print("\n--- [U] Alterar Veículo ---")
+                placa_busca = input("Digite a placa do veículo: ").strip().upper()
+                veiculo = next((v for v in veiculos if v['placa'] == placa_busca), None)
+                
+                if veiculo:
+                    if veiculo['status'] == 'Alugado':
+                        print("[X] Não é possível alterar dados de um veículo alugado no momento.")
+                    else:
+                        print(f"\nVeículo Encontrado: {veiculo['marca']} {veiculo['modelo']}")
+                        veiculo['modelo'] = input(f"Novo Modelo ({veiculo['modelo']}): ").strip() or veiculo['modelo']
+                        veiculo['marca'] = input(f"Nova Marca ({veiculo['marca']}): ").strip() or veiculo['marca']
+                        print("\n[✔] Dados do veículo atualizados!")
+                else:
+                    print("[X] Veículo não encontrado.")
+                pausar()
+                
+            elif opcao_veiculo == '4':
+                print("\n--- [D] Excluir Veículo ---")
+                placa_busca = input("Digite a placa do veículo a ser removido: ").strip().upper()
+                veiculo = next((v for v in veiculos if v['placa'] == placa_busca), None)
+                
+                if veiculo:
+                    if veiculo['status'] == 'Alugado':
+                        print("[X] Erro: Não é permitido remover um veículo que está alugado!")
+                    else:
+                        veiculos.remove(veiculo)
+                        print("\n[✔] Veículo removido da frota com sucesso!")
+                else:
+                    print("[X] Veículo não encontrado.")
+                pausar()
+                
+            elif opcao_veiculo == '5':
+                print("\n--- [Relatório] Filtrar Frota por Status ---")
+                print("1 - Disponíveis")
+                print("2 - Alugados")
+                st_op = input("Selecione o status: ").strip()
+                status_alvo = "Disponível" if st_op == '1' else "Alugado" if st_op == '2' else None
+                
+                if status_alvo:
+                    filtro = [v for v in veiculos if v['status'] == status_alvo]
+                    print(f"\n--- Veículos com status '{status_alvo}' ---")
+                    if not filtro:
+                        print("Nenhum veículo nesta situação.")
+                    else:
+                        for v in filtro:
+                            print(f"Placa: {v['placa']} | {v['marca']} {v['modelo']}")
+                else:
+                    print("[X] Opção inválida.")
+                pausar()
         
     elif resp == '3':
         # MÓDULO LOCAÇÃO #
         opcao_loc = ''
-        while opcao_loc != '3':
+        while opcao_loc != '5':
             limpar_tela()
             print("############################################")
             print("#####         Painel de Aluguel       ######")
             print("############################################")
-            print("#####    1- Nova Locação              ######")
-            print("#####    2- Listar Locações Ativas     #####")
-            print("#####    3- Voltar ao Menu Principal   #####")
+            print("#####    1 - Nova Locação (Cadastrar) ######")
+            print("#####    2 - Listar Locações Ativas   ######")
+            print("#####    3 - Alterar Dias de Locação  ######")
+            print("#####    4 - Dar Baixa / Encerrar     ######")
+            print("#####    5 - Voltar ao Menu Principal   #####")
             print("############################################")
             opcao_loc = input("Opção: ").strip()
 
             if opcao_loc == '1':
-                print("\n--- Nova Locação ---")
+                print("\n--- [C] Nova Locação ---")
                 if not clientes or not veiculos:
-                    print("[X] Erro: É necessário ter pelo menos um cliente e um veículo cadastrados!")
-                    input("\nTecle <ENTER> para continuar...")
+                    print("[X] Erro: Certifique-se de ter clientes e veículos em estoque!")
+                    pausar()
                     continue
 
                 cpf_busca = input("Digite o CPF do cliente: ").strip()
                 cliente_encontrado = next((c for c in clientes if c['cpf'] == cpf_busca), None)
                 
                 if not cliente_encontrado:
-                    print("[X] Cliente não encontrado!")
-                    input("\nTecle <ENTER> para continuar...")
+                    print("[X] Cliente não cadastrado!")
+                    pausar()
                     continue
                     
-                placa_busca = input("Digite a placa do veículo desejado: ").strip().upper()
+                placa_busca = input("Digite a placa do veículo: ").strip().upper()
                 veiculo_encontrado = next((v for v in veiculos if v['placa'] == placa_busca), None)
                 
                 if not veiculo_encontrado:
-                    print("[X] Veículo não encontrado!")
+                    print("[X] Veículo não localizado!")
                 elif veiculo_encontrado['status'] == 'Alugado':
-                    print("[X] Este veículo já está alugado no momento!")
+                    print("[X] Este carro já está sob contrato de locação ativo!")
                 else:
                     veiculo_encontrado['status'] = 'Alugado'
-                    dias = input("Quantidade de dias da locação: ").strip()
-
-                    locacoes.append({
-                        "cliente": cliente_encontrado['nome'],
-                        "veiculo": veiculo_encirculo = veiculo_encontrado['modelo'],
-                        "placa": veiculo_encontrado['placa'],
-                        "dias": dias
-                    })
-                    print(f"\n[✔] Sucesso! {veiculo_encontrado['modelo']} alugado para {cliente_encontrado['nome']}.")
-                    
-                input("\nTecle <ENTER> para continuar...")
+                    try:
+                        dias = int(input("Quantidade de dias contratados: "))
+                        locacoes.append({
+                            "cpf_cliente": cliente_encontrado['cpf'],
+                            "cliente": cliente_encontrado['nome'],
+                            "veiculo": veiculo_encontrado['modelo'],
+                            "placa": veiculo_encontrado['placa'],
+                            "dias": dias
+                        })
+                        print(f"\n[✔] Sucesso! {veiculo_encontrado['modelo']} alugado para {cliente_encontrado['nome']}.")
+                    except ValueError:
+                        print("[X] Erro: Insira um número válido para os dias.")
+                        veiculo_encontrado['status'] = 'Disponível'
+                pausar()
                 
             elif opcao_loc == '2':
-                print("\n--- Locações Ativas ---")
+                print("\n--- [R] Exibir Locações Ativas ---")
                 if not locacoes:
-                    print("Nenhuma locação ativa no momento.")
+                    print("Nenhum contrato de locação ativo.")
                 else:
                     for l in locacoes:
-                        print(f"Cliente: {l['cliente']} | Carro: {l['veiculo']} ({l['placa']}) | Tempo: {l['dias']} dias")
-                input("\nTecle <ENTER> para continuar...")
+                        print(f"Cliente: {l['cliente']} ({l['cpf_cliente']}) | Carro: {l['veiculo']} [Placa: {l['placa']}] | Prazo: {l['dias']} dias")
+                pausar()
+
+            elif opcao_loc == '3':
+                print("\n--- [U] Alterar Dias da Locação ---")
+                placa_busca = input("Digite a placa do veículo alugado: ").strip().upper()
+                locacao = next((l for l in locacoes if l['placa'] == placa_busca), None)
+                
+                if locacao:
+                    try:
+                        novos_dias = int(input(f"Contrato atual: {locacao['dias']} dias. Digite o novo prazo em dias: "))
+                        locacao['dias'] = novos_dias
+                        print("\n[✔] Prazo do contrato prorrogado/alterado!")
+                    except ValueError:
+                        print("[X] Entrada inválida.")
+                else:
+                    print("[X] Contrato ativo não localizado para esta placa.")
+                pausar()
+
+            elif opcao_loc == '4':
+                print("\n--- [D] Encerrar Locação (Devolução) ---")
+                placa_busca = input("Digite a placa do veículo a ser devolvido: ").strip().upper()
+                locacao = next((l for l in locacoes if l['placa'] == placa_busca), None)
+                veiculo = next((v for v in veiculos if v['placa'] == placa_busca), None)
+                
+                if locacao and veiculo:
+                    veiculo['status'] = 'Disponível'
+                    locacoes.remove(locacao)
+                    print(f"\n[✔] Devolução concluída! O veículo {veiculo['modelo']} voltou ao estoque.")
+                else:
+                    print("[X] Erro nas credenciais ou veículo não consta como alugado.")
+                pausar()
 
     elif resp == '4':
         limpar_tela()
         print("############################################")
         print("#####       Sobre o PyRent-a-car       #####")
         print("############################################")
-        print("#####                                  #####")
         print("#####  PyRent-a-car: Um sistema de     #####")
         print("#####  Gestão para Locação de Veículos #####")
         print("#####                                  #####")
@@ -228,21 +350,20 @@ while resp != '0':
         print("#####                                  #####")
         print("#####  Ambiente de Desenvolvimento:    #####")
         print("#####  Visual Studio Code (VS Code)    #####")
-        print("#####                                  #####")
         print("############################################")
-        input("\nTecle <ENTER> para continuar...")
+        pausar()
         
     elif resp == '0':
         limpar_tela()
         print("############################################")
         print("### Motor desligado. Até a próxima viagem! #")
         print("############################################")
-        input("\nTecle <ENTER> para continuar...")
+        pausar()
         
     else:
         print("\n############################################")
         print("#####    Você digitou uma opção inválida ####")
         print("############################################")
-        input("\nTecle <ENTER> para retornar ao menu principal...")
+        pausar()
 
 print("\nMotor desligado. Até a próxima viagem!")
