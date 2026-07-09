@@ -6,20 +6,20 @@ veiculos = []
 locacoes = []
 
 def validar_cpf(cpf: str) -> bool:
-    """Valida um CPF utilizando o algoritmo oficial dos dígitos verificadores."""
-    # Remove caracteres não numéricos
+    # Valida CPF #
+    # Remove caracteres não numéricos#
     cpf = ''.join(filter(str.isdigit, cpf))
     
-    # Verifica se tem 11 dígitos ou se é uma sequência repetida comum
+    # Verifica se tem 11 dígitos ou se é uma sequência repetida #
     if len(cpf) != 11 or cpf == cpf[0] * 11:
         return False
         
-    # Cálculo do primeiro dígito verificador
+    # Cálculo do primeiro dígito verificador #
     soma = sum(int(cpf[i]) * (10 - i) for i in range(9))
     resto = (soma * 10) % 11
     digito_1 = 0 if resto == 10 else resto
     
-    # Cálculo do segundo dígito verificador
+    # Cálculo do segundo dígito verificador #
     soma = sum(int(cpf[i]) * (11 - i) for i in range(10))
     resto = (soma * 10) % 11
     digito_2 = 0 if resto == 10 else resto
@@ -27,7 +27,7 @@ def validar_cpf(cpf: str) -> bool:
     return cpf[9] == str(digito_1) and cpf[10] == str(digito_2)
 
 def limpar_tela():
-    """Limpa o terminal de forma multiplataforma (Windows e Linux/Mac)."""
+  
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
@@ -40,32 +40,58 @@ while resp != '0':
     print("######   Gestão de Locação de Veículos  ######")
     print("##############################################")
     print("######      1 - Módulo Clientes        #######")
-    print("######      2 - Módulo Veículos         ######")
+    print("######      2 - Módulo Veículos        #######")
     print("######      3 - Módulo Locação          ######")
     print("######      4 - Módulo Sobre o Sistema  ######")
     print("#####       0 - Sair                   #######")
     print("##############################################")
-    resp = input("##### Selecione a operação desejada: ")
+    resp = input("##### Selecione a operação desejada: ").strip()
 
     if resp == '1':   
-        # MÓDULO CLIENTES
+        # MÓDULO CLIENTES #
         opcao_cliente = ''
-        while opcao_cliente != '3':
-            os.system('cls')
+        while opcao_cliente != '4':
+            limpar_tela()
             print("############################################")
             print("#####      Área do Cliente - PyRent    #####")
             print("############################################")
             print("#####  1 - Cadastrar Cliente           #####")
             print("#####  2 - Listar Clientes             #####")
-            print("#####  3 - Voltar ao Menu Principal    #####")
+            print("#####  3 - Aniversariantes do Mês      #####")
+            print("#####  4 - Voltar ao Menu Principal    #####")
             print("############################################")
-            opcao_cliente = input("Opção: ")
+            opcao_cliente = input("Opção: ").strip()
+            
             if opcao_cliente == '1':
                 print("\n--- Cadastro de Cliente ---")
-                cpf = input("CPF: ")
-                nome = input("Nome: ")
-                telefone = input("Telefone: ")
-                clientes.append({"cpf": cpf, "nome": nome, "telefone": telefone})
+                cpf = input("CPF (apenas números): ").strip()
+                
+                # Validação do CPF em loop até digitar um válido #
+                while not validar_cpf(cpf):
+                    print("[X] CPF Inválido! Tente novamente.")
+                    cpf = input("CPF (apenas números): ").strip()
+                
+                nome = input("Nome: ").strip()
+                telefone = input("Telefone: ").strip()
+                
+                # validação da data de nascimento #
+                data_nasc_valida = False
+                while not data_nasc_valida:
+                    data_nasc_str = input("Data de Nascimento (DD/MM/AAAA): ").strip()
+                    try:
+                        # Valida formato de data #
+                        data_nasc = datetime.strptime(data_nasc_str, "%d/%m/%d" if len(data_nasc_str)==5 else "%d/%m/%Y")
+                        data_nasc_valida = True
+                    except ValueError:
+                        print("[X] Formato de data inválido. Use o padrão DD/MM/AAAA.")
+
+                clientes.append({
+                    "cpf": cpf, 
+                    "nome": nome, 
+                    "telefone": telefone, 
+                    "mes_aniversario": data_nasc.month,
+                    "data_nasc_str": data_nasc.strftime("%d/%m/%Y")
+                })
                 print("\n[✔] Cliente cadastrado com sucesso!")
                 input("\nTecle <ENTER> para continuar...")
                 
@@ -75,14 +101,33 @@ while resp != '0':
                     print("Nenhum cliente cadastrado.")
                 else:
                     for c in clientes:
-                        print(f"Nome: {c['nome']} | CPF: {c['cpf']} | Tel: {c['telefone']}")
+                        print(f"Nome: {c['nome']} | CPF: {c['cpf']} | Tel: {c['telefone']} | Nasc: {c['data_nasc_str']}")
+                input("\nTecle <ENTER> para continuar...")
+                
+            elif opcao_cliente == '3':
+                print("\n--- Buscar Aniversariantes do Mês ---")
+                try:
+                    mes_busca = int(input("Digite o número do mês que deseja buscar (1 a 12): "))
+                    if 1 <= mes_busca <= 12:
+                        aniversariantes = [c for c in clientes if c['mes_aniversario'] == mes_busca]
+                        
+                        if not aniversariantes:
+                            print(f"\nNenhum cliente faz aniversário no mês {mes_busca}.")
+                        else:
+                            print(f"\n--- Aniversariantes do Mês {mes_busca} ---")
+                            for ani in aniversariantes:
+                                print(f"• {ani['nome']} | Contato: {ani['telefone']} | Data: {ani['data_nasc_str']}")
+                    else:
+                        print("[X] Mês inválido. Digite um valor entre 1 e 12.")
+                except ValueError:
+                    print("[X] Entrada inválida. Digite apenas números.")
                 input("\nTecle <ENTER> para continuar...")
         
     elif resp == '2':
-        # MÓDULO VEÍCULOS/FROTA
+        # MÓDULO VEÍCULOS/FROTA #
         opcao_veiculo = ''
-        while opcao_veic != '3':
-            os.system('cls')
+        while opcao_veiculo != '3':
+            limpar_tela()
             print("############################################")
             print("#####          Gestão da Frota         ####")
             print("############################################")
@@ -90,13 +135,13 @@ while resp != '0':
             print("#####  2 - Listar Frota                #####")
             print("#####  3 - Voltar ao Menu Principal    #####")
             print("############################################")
-            opcao_veiculo = input("Opção: ")
+            opcao_veiculo = input("Opção: ").strip()
             
             if opcao_veiculo == '1':
                 print("\n--- Cadastro de Veículo ---")
-                placa = input("Placa: ")
-                modelo = input("Modelo/Carro: ")
-                marca = input("Marca: ")
+                placa = input("Placa: ").strip().upper()
+                modelo = input("Modelo/Carro: ").strip()
+                marca = input("Marca: ").strip()
                 veiculos.append({"placa": placa, "modelo": modelo, "marca": marca, "status": "Disponível"})
                 print("\n[✔] Veículo cadastrado com sucesso!")
                 input("\nTecle <ENTER> para continuar...")
@@ -111,68 +156,66 @@ while resp != '0':
                 input("\nTecle <ENTER> para continuar...")
         
     elif resp == '3':
-        # MÓDULO LOCAÇÃO
+        # MÓDULO LOCAÇÃO #
         opcao_loc = ''
         while opcao_loc != '3':
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print()
-        print("############################################")
-        print("#####         Painel de Aluguel       ######")
-        print("############################################")
-        print("#####    1- Nova Locação              ######")
-        print("#####    2- Listar Locações Ativas     #####")
-        print("#####    3- voltar ao Menu Principal   #####")
-        print("############################################")
-        opcao_loc = input("Opção: ")
+            limpar_tela()
+            print("############################################")
+            print("#####         Painel de Aluguel       ######")
+            print("############################################")
+            print("#####    1- Nova Locação              ######")
+            print("#####    2- Listar Locações Ativas     #####")
+            print("#####    3- Voltar ao Menu Principal   #####")
+            print("############################################")
+            opcao_loc = input("Opção: ").strip()
 
-        if opcao_loc == '1':
-            print("\n--- Nova Locação ---")
-            if not clientes or not veiculos:
-                print("[X] Erro: É necessário ter pelo menos um cliente e um veículo cadastrados!")
-                input("\nTecle <ENTER> para continuar...")
-                continue
+            if opcao_loc == '1':
+                print("\n--- Nova Locação ---")
+                if not clientes or not veiculos:
+                    print("[X] Erro: É necessário ter pelo menos um cliente e um veículo cadastrados!")
+                    input("\nTecle <ENTER> para continuar...")
+                    continue
 
-            cpf_busca = input("Digite o CPF do cliente: ")
-            # Verifica se o cliente existe
-            cliente_encontrado = next((c for c in clientes if c['cpf'] == cpf_busca), None)
+                cpf_busca = input("Digite o CPF do cliente: ").strip()
+                cliente_encontrado = next((c for c in clientes if c['cpf'] == cpf_busca), None)
                 
-            if not cliente_encontrado:
-                print("[X] Cliente não encontrado!")
-                input("\nTecle <ENTER> para continuar...")
-                continue
-            placa_busca = input("Digite a placa do veículo desejado: ")
-            # Verifica se o veículo existe e está disponível
-            veiculo_encontrado = next((v for v in veiculos if v['placa'] == placa_busca), None)
+                if not cliente_encontrado:
+                    print("[X] Cliente não encontrado!")
+                    input("\nTecle <ENTER> para continuar...")
+                    continue
+                    
+                placa_busca = input("Digite a placa do veículo desejado: ").strip().upper()
+                veiculo_encontrado = next((v for v in veiculos if v['placa'] == placa_busca), None)
                 
-            if not veiculo_encontrado:
-                print("[X] Veículo não encontrado!")
-            elif veiculo_encontrado['status'] == 'Alugado':
-                print("[X] Este veículo já está alugado no momento!")
-            else:
-                # Aluga o carro
-                veiculo_encontrado['status'] = 'Alugado'
-                dias = input("Quantidade de dias da locação: ")
+                if not veiculo_encontrado:
+                    print("[X] Veículo não encontrado!")
+                elif veiculo_encontrado['status'] == 'Alugado':
+                    print("[X] Este veículo já está alugado no momento!")
+                else:
+                    veiculo_encontrado['status'] = 'Alugado'
+                    dias = input("Quantidade de dias da locação: ").strip()
 
-                locacoes.append({
-                    "cliente": cliente_encontrado['nome'],
-                    "veiculo": veiculo_encontrado['modelo'],
-                    "placa": veiculo_encontrado['placa'],
-                    "dias": dias
+                    locacoes.append({
+                        "cliente": cliente_encontrado['nome'],
+                        "veiculo": veiculo_encirculo = veiculo_encontrado['modelo'],
+                        "placa": veiculo_encontrado['placa'],
+                        "dias": dias
                     })
                     print(f"\n[✔] Sucesso! {veiculo_encontrado['modelo']} alugado para {cliente_encontrado['nome']}.")
+                    
+                input("\nTecle <ENTER> para continuar...")
                 
-            input("\nTecle <ENTER> para continuar...")
-        elif opcao_loc == '2':
-            print("\n--- Locações Ativas ---")
-            if not locacoes:
-                print("Nenhuma locação ativa no momento.")
-            else:
-                for l in locacoes:
-                    print(f"Cliente: {l['cliente']} | Carro: {l['veiculo']} ({l['placa']}) | Tempo: {l['dias']} dias")
-            input("\nTecle <ENTER> para continuar...")
+            elif opcao_loc == '2':
+                print("\n--- Locações Ativas ---")
+                if not locacoes:
+                    print("Nenhuma locação ativa no momento.")
+                else:
+                    for l in locacoes:
+                        print(f"Cliente: {l['cliente']} | Carro: {l['veiculo']} ({l['placa']}) | Tempo: {l['dias']} dias")
+                input("\nTecle <ENTER> para continuar...")
 
     elif resp == '4':
-        print()
+        limpar_tela()
         print("############################################")
         print("#####       Sobre o PyRent-a-car       #####")
         print("############################################")
@@ -187,28 +230,19 @@ while resp != '0':
         print("#####  Visual Studio Code (VS Code)    #####")
         print("#####                                  #####")
         print("############################################")
-        print()
-        input("Tecle <ENTER> para continuar...")
+        input("\nTecle <ENTER> para continuar...")
         
     elif resp == '0':
-        print()
+        limpar_tela()
         print("############################################")
         print("### Motor desligado. Até a próxima viagem! #")
         print("############################################")
-        print()
-        input("Tecle <ENTER> para continuar...")
+        input("\nTecle <ENTER> para continuar...")
         
     else:
-        print()
-        print("############################################")
+        print("\n############################################")
         print("#####    Você digitou uma opção inválida ####")
         print("############################################")
-        print("#####                                  #####")
-        print("#####       Retorne ao menu principal  #####")
-        print("#####       e digite uma rota válida   #####")
-        print("#####                                  #####")
-        print("############################################")
-        print()
-        input("Tecle <ENTER> para continuar...")
+        input("\nTecle <ENTER> para retornar ao menu principal...")
 
-print("\n Motor desligado. Até a próxima viagem!")
+print("\nMotor desligado. Até a próxima viagem!")
